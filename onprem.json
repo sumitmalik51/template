@@ -349,7 +349,7 @@
             "location": "[variables('location')]",
             "dependsOn": [
                
-                "[variables('networkSecurityGroupName')]"
+               
             ],
             "properties": {
                 "addressSpace": {
