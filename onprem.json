@@ -612,7 +612,8 @@
   "outputs": {
     "Jumpbox DNS Name": {
       "type": "string",
-      "value": "[concat('jumpbox', '.', resourceGroup().location, '.cloudapp.azure.com')]"
+            "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses',variables('jbPublicIpAddressName'))).dnsSettings.fqdn]"
+
     },
 
     "Jumpbox VM Username": {
@@ -625,7 +626,7 @@
     },
     "SQL Server VM DNS Name": {
       "type": "string",
-      "value": "[concat('SqlServer2008', '.', resourceGroup().location, '.cloudapp.azure.com')]"
+            "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses',variables('sqlPublicIpAddressName'))).dnsSettings.fqdn]"
     },
     "SQL Server VM Username": {
       "type": "string",
