@@ -1070,13 +1070,18 @@
       
     ],
     "outputs": {
-        "adminUsername": {
-            "type": "string",
-            "value": "[parameters('adminUsername')]"
-        },
+        
         "managedInstanceName": {
             "type": "string",
             "value": "[variables('uniqueManagedInstanceName')]"
-        }
+        },
+          "SQL MI Username": {
+      "type": "string",
+      "value": "sqlmiuser"
+    },
+    "SQL MI Password": {
+      "type": "string",
+      "value": "Password.1234567890"
+    }
     }
 }
