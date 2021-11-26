@@ -1,630 +1,624 @@
 {
-    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-    "contentVersion": "1.0.0.1",
-    "parameters": {
-         "managedInstanceName": {
-            "defaultValue": "sqlmi",
-            "type": "string",
-            "maxLength": 13,
-            "metadata": {
-                "description": "Enter name to assign to the Azure SQL Managed Instance. The name can contain only lowercase letters, numbers, and '-', but can't start or end with '-' or have more than 63 characters."
-            }
-        },
-        "adminUsername": {
-      "defaultValue": "sqlmiuser",
-      "type": "string",
-      "metadata": {
-        "description": "Administrator user name for logging into the virtual machine and SQL MI."
-      }
-    },
-    "adminPassword": {
-      "defaultValue": "Password.1234567890",
-      "type": "securestring",
-      "minLength": 16,
-      "maxLength": 128,
-      "metadata": {
-        "description": "The password must be between 16 and 128 characters in length and must contain at least one number, one non-alphanumeric character, and one upper or lower case letter. Default value is Password.1234567890"
-      }
-    },
-    "vCores": {
-      "type": "int",
-      "defaultValue": 16,
-      "allowedValues": [
-        8,
-        16,
-        24,
-        32
-      ],
-      "metadata": {
-        "description": "Select the number of vCores for SQL MI."
-      }
-    },
-    "AzureUserName": {
-      "type": "string",
-      "metadata": {
-        "description": "AzureUserName, AzurePassword, DeploymentID parameters are required for Azure Creds file, Must use in all Windows LabVMs "
-      }
-    },
-    "AzurePassword": {
-      "type": "securestring"
-    },
-    "ODLID": {
-      "type": "string"
-    },
-    "DeploymentID": {
-      "type": "string"
-    },
-    "InstallCloudLabsShadow": {
-      "type": "string",
-      "defaultValue": "yes",
-      "allowedValues": [
-        "yes",
-        "no"
-      ],
-      "metadata": {
-        "description": "Required for CloudlabsShadow, value should be yes if you want to install otherwise no"
-      }
-    },
-    "trainerUserName": {
-      "type": "string"
-    },
-    "trainerUserPassword": {
-      "type": "string"
-    }
-    },
-    "variables": {
-         "Enable-CloudLabsEmbeddedShadow": "[concat(' -vmAdminUsername ', parameters('adminUsername'), ' -trainerUserName ', parameters('trainerUserName'), ' -trainerUserPassword ', parameters('trainerUserPassword'))]",
+   "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+   "contentVersion": "1.0.0.1",
+   "parameters": {
+       
+       "adminUsername": {
+     "defaultValue": "sqlmiuser",
+     "type": "string",
+     "metadata": {
+       "description": "Administrator user name for logging into the virtual machine and SQL MI."
+     }
+   },
+   "adminPassword": {
+     "defaultValue": "Password.1234567890",
+     "type": "securestring",
+     "minLength": 16,
+     "maxLength": 128,
+     "metadata": {
+       "description": "The password must be between 16 and 128 characters in length and must contain at least one number, one non-alphanumeric character, and one upper or lower case letter. Default value is Password.1234567890"
+     }
+   },
+   "vCores": {
+     "type": "int",
+     "defaultValue": 16,
+     "allowedValues": [
+       8,
+       16,
+       24,
+       32
+     ],
+     "metadata": {
+       "description": "Select the number of vCores for SQL MI."
+     }
+   },
+   "AzureUserName": {
+     "type": "string",
+     "metadata": {
+       "description": "AzureUserName, AzurePassword, DeploymentID parameters are required for Azure Creds file, Must use in all Windows LabVMs "
+     }
+   },
+   "AzurePassword": {
+     "type": "securestring"
+   },
+   "ODLID": {
+     "type": "string"
+   },
+   "DeploymentID": {
+     "type": "string"
+   },
+   "InstallCloudLabsShadow": {
+     "type": "string",
+     "defaultValue": "yes",
+     "allowedValues": [
+       "yes",
+       "no"
+     ],
+     "metadata": {
+       "description": "Required for CloudlabsShadow, value should be yes if you want to install otherwise no"
+     }
+   },
+   "trainerUserName": {
+     "type": "string"
+   },
+   "trainerUserPassword": {
+     "type": "string"
+   }
+   },
+   "variables": {
+      "managedInstanceName": "sqlmi",
+        "Enable-CloudLabsEmbeddedShadow": "[concat(' -vmAdminUsername ', parameters('adminUsername'), ' -trainerUserName ', parameters('trainerUserName'), ' -trainerUserPassword ', parameters('trainerUserPassword'))]",
 
-    "cloudlabsCommon": "[concat(' -AzureUserName ', parameters('AzureUserName'), ' -AzurePassword ', parameters('AzurePassword'), ' -AzureTenantID ', variables('AzureTenantID'), ' -AzureSubscriptionID ', variables('AzureSubscriptionID'), ' -ODLID ', parameters('ODLID'), ' -DeploymentID ', parameters('DeploymentID'),' -InstallCloudLabsShadow ', parameters('InstallCloudLabsShadow'))]",
-        "location": "[resourceGroup().location]",
-        "uniqueManagedInstanceName": "[concat(parameters('managedInstanceName'), '-', uniqueString(resourceGroup().id))]",
-        "storageAccountName": "[concat('sqlmistore', uniqueString(resourceGroup().id))]",
-        "skuName": "BC_Gen5",
-        "skuEdition": "BusinessCritical",
-        "licenseType": "LicenseIncluded",
-        "hardwareFamily": "Gen5",
-        "publicDataEndpointEnabled": false,
-        "timezoneId": "UTC",
-         "AzureSubscriptionID": "[subscription().subscriptionId]",
-    "AzureTenantID": "[subscription().tenantId]",
-         "virtualMachineSize": "Standard_D4s_v3",
-        "jbVirtualMachineName": "JumpBox",
-        "jbNetworkSecurityGroupName": "[concat(variables('jbVirtualMachineName'), '-nsg')]",
-        "jbNetworkInterfaceName": "[concat(variables('jbVirtualMachineName'), '-nic')]",
-        "jbPublicIpAddressName": "[concat(variables('jbVirtualMachineName'), '-ip')]",
-        "sqlVirtualMachineName": "SqlServer2008",
-        "sqlNetworkSecurityGroupName": "[concat(variables('sqlVirtualMachineName'), '-nsg')]",
-        "sqlNetworkInterfaceName": "[concat(variables('sqlVirtualMachineName'), '-nic')]",
-        "sqlPublicIpAddressName": "[concat(variables('sqlVirtualMachineName'), '-ip')]",
-        "dataDisks": [{"lun":0,"createOption":"empty","caching":"ReadOnly","writeAcceleratorEnabled":false,"id":null,"name":null,"storageAccountType":"Premium_LRS","diskSizeGB":1023,"diskEncryptionSet":{"id":null}}],
-        "virtualNetworkGatewayName": "[concat(resourceGroup().name, '-vnet-gateway')]",
-        "vgPublicIpAddressName": "vnet-gateway-ip",
-        "vgGatewayType": "Vpn",
-        "vgVpnType": "RouteBased",
-        "routeTableName": "[concat(resourceGroup().name, '-route-table')]",
-        "virtualNetworkName": "[concat(resourceGroup().name, '-vnet')]",
-        "addressPrefix": "10.0.0.0/16",
-        "subnetName": "ManagedInstance",
-        "subnetPrefix": "10.0.0.0/24",
-        "gatewaySubnetName": "GatewaySubnet",
-        "gatewaySubnetPrefix": "10.0.2.0/24",
-        "managementSubnetName": "Management",
-        "managementSubnetPrefix": "10.0.1.0/24",
-        "appServicePlanName": "[concat(resourceGroup().name, '-asp')]",
-        "webAppName": "[concat('wwi-web-', uniqueString(resourceGroup().id))]",
-        "dmsName": "wwi-dms",
-        "jbCustomScriptFileName": "jumpvm.ps1",
-    "jbCustomScriptUri": "[concat('https://raw.githubusercontent.com/sumitmalik51/template/main/', variables('jbCustomScriptFileName'))]",
-    "sqlCustomScriptFileName": "sqlvm.ps1",
-    "sqlCustomScriptUri": "[concat('https://experienceazure.blob.core.windows.net/templates/migrating-sql-database-to-azure(2)/', variables('sqlCustomScriptFileName'))]"
- 
-    },
-    "resources": [
-        
-        {
-            "type": "Microsoft.Storage/storageAccounts",
-            "apiVersion": "2019-04-01",
-            "name": "[variables('storageAccountName')]",
-            "location": "[variables('location')]",
-            "sku": {
-                "name": "Standard_LRS",
-                "tier": "Standard"
-            },
-            "kind": "StorageV2",
-            "properties": {
-                "networkAcls": {
-                    "bypass": "AzureServices",
-                    "virtualNetworkRules": [],
-                    "ipRules": [],
-                    "defaultAction": "Allow"
-                },
-                "supportsHttpsTrafficOnly": true,
-                "encryption": {
-                    "services": {
-                        "file": {
-                            "enabled": true
-                        },
-                        "blob": {
-                            "enabled": true
-                        }
-                    },
-                    "keySource": "Microsoft.Storage"
-                },
-                "accessTier": "Hot"
-            }
-        },
-        {
-            "name": "[variables('sqlVirtualMachineName')]",
-            "type": "Microsoft.Compute/virtualMachines",
-            "apiVersion": "2019-03-01",
-            "location": "[variables('location')]",
-            "dependsOn": [
-                "[concat('Microsoft.Network/networkInterfaces/', variables('sqlNetworkInterfaceName'))]"
-            ],
-            "properties": {
-                "hardwareProfile": {
-                    "vmSize": "[variables('virtualMachineSize')]"
-                },
-                "storageProfile": {
-                    "osDisk": {
-                        "createOption": "FromImage",
-                        "managedDisk": {
-                            "storageAccountType": "Premium_LRS"
-                        }
-                    },
-                    "imageReference": {
-                        "publisher": "MicrosoftSQLServer",
-                        "offer": "SQL2008R2SP3-WS2008R2SP1",
-                        "sku": "Standard",
-                        "version": "latest"
-                    },
-                    "copy": [
-                        {
-                            "name": "dataDisks",
-                            "count": "[length(variables('dataDisks'))]",
-                            "input": {
-                                "lun": "[variables('dataDisks')[copyIndex('dataDisks')].lun]",
-                                "createOption": "[variables('dataDisks')[copyIndex('dataDisks')].createOption]",
-                                "caching": "[variables('dataDisks')[copyIndex('dataDisks')].caching]",
-                                "writeAcceleratorEnabled": "[variables('dataDisks')[copyIndex('dataDisks')].writeAcceleratorEnabled]",
-                                "diskSizeGB": "[variables('dataDisks')[copyIndex('dataDisks')].diskSizeGB]",
-                                "managedDisk": {
-                                    "id": "[coalesce(variables('dataDisks')[copyIndex('dataDisks')].id, if(equals(variables('dataDisks')[copyIndex('dataDisks')].name, json('null')), json('null'), resourceId('Microsoft.Compute/disks', variables('dataDisks')[copyIndex('dataDisks')].name)))]",
-                                    "storageAccountType": "[variables('dataDisks')[copyIndex('dataDisks')].storageAccountType]"
-                                }
-                            }
-                        }
-                    ]
-                },
-                "networkProfile": {
-                    "networkInterfaces": [
-                        {
-                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('sqlNetworkInterfaceName'))]"
-                        }
-                    ]
-                },
-                "osProfile": {
-                    "computerName": "[variables('sqlVirtualMachineName')]",
-                    "adminUsername": "[parameters('adminUsername')]",
-                    "adminPassword": "[parameters('adminPassword')]",
-                    "windowsConfiguration": {
-                        "enableAutomaticUpdates": true,
-                        "provisionVmAgent": true
-                    }
-                }
-            },
-             "resources": [
-        {
-          "name": "SetupSqlVm",
-          "apiVersion": "2019-03-01",
-          "type": "extensions",
-          "location": "[variables('location')]",
-          "properties": {
-            "publisher": "Microsoft.Compute",
-            "type": "CustomScriptExtension",
-            "typeHandlerVersion": "1.9",
-            "autoUpgradeMinorVersion": true,
-            "settings": {
-              "fileUris": [
-                "[variables('sqlCustomScriptUri')]",
-                "https://experienceazure.blob.core.windows.net/templates/cloudlabs-common/cloudlabs-windows-functions.ps1"
+   "cloudlabsCommon": "[concat(' -AzureUserName ', parameters('AzureUserName'), ' -AzurePassword ', parameters('AzurePassword'), ' -AzureTenantID ', variables('AzureTenantID'), ' -AzureSubscriptionID ', variables('AzureSubscriptionID'), ' -ODLID ', parameters('ODLID'), ' -DeploymentID ', parameters('DeploymentID'),' -InstallCloudLabsShadow ', parameters('InstallCloudLabsShadow'))]",
+       "location": "[resourceGroup().location]",
+       "uniqueManagedInstanceName": "[concat(variables('managedInstanceName'), '-', uniqueString(resourceGroup().id))]",
+       "storageAccountName": "[concat('sqlmistore', uniqueString(resourceGroup().id))]",
+       "skuName": "BC_Gen5",
+       "skuEdition": "BusinessCritical",
+       "licenseType": "LicenseIncluded",
+       "hardwareFamily": "Gen5",
+       "publicDataEndpointEnabled": false,
+       "timezoneId": "UTC",
+        "AzureSubscriptionID": "[subscription().subscriptionId]",
+   "AzureTenantID": "[subscription().tenantId]",
+        "virtualMachineSize": "Standard_D4s_v3",
+       "jbVirtualMachineName": "JumpBox",
+       "jbNetworkSecurityGroupName": "[concat(variables('jbVirtualMachineName'), '-nsg')]",
+       "jbNetworkInterfaceName": "[concat(variables('jbVirtualMachineName'), '-nic')]",
+       "jbPublicIpAddressName": "[concat(variables('jbVirtualMachineName'), '-ip')]",
+       "sqlVirtualMachineName": "SqlServer2008",
+       "sqlNetworkSecurityGroupName": "[concat(variables('sqlVirtualMachineName'), '-nsg')]",
+       "sqlNetworkInterfaceName": "[concat(variables('sqlVirtualMachineName'), '-nic')]",
+       "sqlPublicIpAddressName": "[concat(variables('sqlVirtualMachineName'), '-ip')]",
+       "dataDisks": [{"lun":0,"createOption":"empty","caching":"ReadOnly","writeAcceleratorEnabled":false,"id":null,"name":null,"storageAccountType":"Premium_LRS","diskSizeGB":1023,"diskEncryptionSet":{"id":null}}],
+       "virtualNetworkGatewayName": "[concat(resourceGroup().name, '-vnet-gateway')]",
+       "vgPublicIpAddressName": "vnet-gateway-ip",
+       "vgGatewayType": "Vpn",
+       "vgVpnType": "RouteBased",
+       "routeTableName": "[concat(resourceGroup().name, '-route-table')]",
+       "virtualNetworkName": "[concat(resourceGroup().name, '-vnet')]",
+       "addressPrefix": "10.0.0.0/16",
+       "subnetName": "ManagedInstance",
+       "subnetPrefix": "10.0.0.0/24",
+       "gatewaySubnetName": "GatewaySubnet",
+       "gatewaySubnetPrefix": "10.0.2.0/24",
+       "managementSubnetName": "Management",
+       "managementSubnetPrefix": "10.0.1.0/24",
+       "appServicePlanName": "[concat(resourceGroup().name, '-asp')]",
+       "webAppName": "[concat('wwi-web-', uniqueString(resourceGroup().id))]",
+       "dmsName": "wwi-dms",
+       "jbCustomScriptFileName": "jumpvm.ps1",
+   "jbCustomScriptUri": "[concat('https://raw.githubusercontent.com/sumitmalik51/template/main/', variables('jbCustomScriptFileName'))]",
+   "sqlCustomScriptFileName": "sqlvm.ps1",
+   "sqlCustomScriptUri": "[concat('https://experienceazure.blob.core.windows.net/templates/migrating-sql-database-to-azure(2)/', variables('sqlCustomScriptFileName'))]"
 
-              ],
-              "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File migrating-sql-database-to-azure(2)/', variables('sqlCustomScriptFileName'), ' ',variables('cloudlabsCommon'))]"
-            }
-          },
-          "dependsOn": [
-            "[concat('Microsoft.Compute/virtualMachines/', variables('sqlVirtualMachineName'))]"
-          ],
-          "tags": {
-            "displayName": "SetupSqlVm"
-          }
-        }
-      ]
-        },
-        {
-            "name": "[variables('sqlVirtualMachineName')]",
-            "type": "Microsoft.SqlVirtualMachine/SqlVirtualMachines",
-            "apiVersion": "2017-03-01-preview",
-            "location": "[variables('location')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Compute/virtualMachines', variables('sqlVirtualMachineName'))]"
-            ],
-            "properties": {
-                "virtualMachineResourceId": "[resourceId('Microsoft.Compute/virtualMachines', variables('sqlVirtualMachineName'))]",
-                "sqlManagement": "Full",
-                "SqlServerLicenseType": "PAYG",
-                "AutoPatchingSettings": {
-                    "Enable": true,
-                    "DayOfWeek": "Sunday",
-                    "MaintenanceWindowStartingHour": 2,
-                    "MaintenanceWindowDuration": 60
-                },
-                "KeyVaultCredentialSettings": {
-                    "Enable": false,
-                    "CredentialName": ""
-                },
-                "StorageConfigurationSettings": {
-                    "DiskConfigurationType": "NEW",
-                    "StorageWorkloadType": "General",
-                    "SQLDataSettings": {
-                        "LUNs": [0],
-                        "DefaultFilePath": "F:\\data"
-                    },
-                    "SQLLogSettings": {
-                        "LUNs": [0],
-                        "DefaultFilePath": "F:\\log"
-                    },
-                    "SQLTempDbSettings": {
-                        "LUNs": [0],
-                        "DefaultFilePath": "F:\\tempDb"
-                    }
-                },
-                "ServerConfigurationsManagementSettings": {
-                    "SQLConnectivityUpdateSettings": {
-                        "ConnectivityType": "Public",
-                        "Port": "1433",
-                        "SQLAuthUpdateUserName": "[parameters('adminUsername')]",
-                        "SQLAuthUpdatePassword": "[parameters('adminPassword')]"
-                    },
-                    "AdditionalFeaturesServerConfigurations": {
-                        "IsRServicesEnabled": false
-                    }
-                }
-            }
-        },
-        {
-            "name": "[variables('jbVirtualMachineName')]",
-            "type": "Microsoft.Compute/virtualMachines",
-            "apiVersion": "2019-03-01",
-            "location": "[variables('location')]",
-            "dependsOn": [
-                "[concat('Microsoft.Network/networkInterfaces/', variables('jbNetworkInterfaceName'))]"
-            ],
-            "properties": {
-                "hardwareProfile": {
-                    "vmSize": "[variables('virtualMachineSize')]"
-                },
-                "storageProfile": {
-                    "osDisk": {
-                        "createOption": "FromImage",
-                        "managedDisk": {
-                            "storageAccountType": "Premium_LRS"
-                        }
-                    },
-                    "imageReference": {
-                        "publisher": "microsoftvisualstudio",
-                        "offer": "visualstudio2019latest",
-                        "sku": "vs-2019-comm-latest-ws2019",
-                        "version": "latest"
-                    }
-                },
-                "networkProfile": {
-                    "networkInterfaces": [
-                        {
-                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('jbNetworkInterfaceName'))]"
-                        }
-                    ]
-                },
-                "osProfile": {
-                    "computerName": "[variables('jbVirtualMachineName')]",
-                    "adminUsername": "[parameters('adminUsername')]",
-                    "adminPassword": "[parameters('adminPassword')]",
-                    "windowsConfiguration": {
-                        "enableAutomaticUpdates": true,
-                        "provisionVmAgent": true
-                    }
-                }
-            },
+   },
+   "resources": [
+       
+       {
+           "type": "Microsoft.Storage/storageAccounts",
+           "apiVersion": "2019-04-01",
+           "name": "[variables('storageAccountName')]",
+           "location": "[variables('location')]",
+           "sku": {
+               "name": "Standard_LRS",
+               "tier": "Standard"
+           },
+           "kind": "StorageV2",
+           "properties": {
+               "networkAcls": {
+                   "bypass": "AzureServices",
+                   "virtualNetworkRules": [],
+                   "ipRules": [],
+                   "defaultAction": "Allow"
+               },
+               "supportsHttpsTrafficOnly": true,
+               "encryption": {
+                   "services": {
+                       "file": {
+                           "enabled": true
+                       },
+                       "blob": {
+                           "enabled": true
+                       }
+                   },
+                   "keySource": "Microsoft.Storage"
+               },
+               "accessTier": "Hot"
+           }
+       },
+       {
+           "name": "[variables('sqlVirtualMachineName')]",
+           "type": "Microsoft.Compute/virtualMachines",
+           "apiVersion": "2019-03-01",
+           "location": "[variables('location')]",
+           "dependsOn": [
+               "[concat('Microsoft.Network/networkInterfaces/', variables('sqlNetworkInterfaceName'))]"
+           ],
+           "properties": {
+               "hardwareProfile": {
+                   "vmSize": "[variables('virtualMachineSize')]"
+               },
+               "storageProfile": {
+                   "osDisk": {
+                       "createOption": "FromImage",
+                       "managedDisk": {
+                           "storageAccountType": "Premium_LRS"
+                       }
+                   },
+                   "imageReference": {
+                       "publisher": "MicrosoftSQLServer",
+                       "offer": "SQL2008R2SP3-WS2008R2SP1",
+                       "sku": "Standard",
+                       "version": "latest"
+                   },
+                   "copy": [
+                       {
+                           "name": "dataDisks",
+                           "count": "[length(variables('dataDisks'))]",
+                           "input": {
+                               "lun": "[variables('dataDisks')[copyIndex('dataDisks')].lun]",
+                               "createOption": "[variables('dataDisks')[copyIndex('dataDisks')].createOption]",
+                               "caching": "[variables('dataDisks')[copyIndex('dataDisks')].caching]",
+                               "writeAcceleratorEnabled": "[variables('dataDisks')[copyIndex('dataDisks')].writeAcceleratorEnabled]",
+                               "diskSizeGB": "[variables('dataDisks')[copyIndex('dataDisks')].diskSizeGB]",
+                               "managedDisk": {
+                                   "id": "[coalesce(variables('dataDisks')[copyIndex('dataDisks')].id, if(equals(variables('dataDisks')[copyIndex('dataDisks')].name, json('null')), json('null'), resourceId('Microsoft.Compute/disks', variables('dataDisks')[copyIndex('dataDisks')].name)))]",
+                                   "storageAccountType": "[variables('dataDisks')[copyIndex('dataDisks')].storageAccountType]"
+                               }
+                           }
+                       }
+                   ]
+               },
+               "networkProfile": {
+                   "networkInterfaces": [
+                       {
+                           "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('sqlNetworkInterfaceName'))]"
+                       }
+                   ]
+               },
+               "osProfile": {
+                   "computerName": "[variables('sqlVirtualMachineName')]",
+                   "adminUsername": "[parameters('adminUsername')]",
+                   "adminPassword": "[parameters('adminPassword')]",
+                   "windowsConfiguration": {
+                       "enableAutomaticUpdates": true,
+                       "provisionVmAgent": true
+                   }
+               }
+           },
             "resources": [
-        {
-          "name": "SetupJumpBox",
-          "apiVersion": "2019-03-01",
-          "type": "extensions",
-          "location": "[variables('location')]",
-          "properties": {
-            "publisher": "Microsoft.Compute",
-            "type": "CustomScriptExtension",
-            "typeHandlerVersion": "1.9",
-            "autoUpgradeMinorVersion": true,
-            "settings": {
-              "fileUris": [
-                "[variables('jbCustomScriptUri')]",
-                "https://experienceazure.blob.core.windows.net/templates/cloudlabs-common/cloudlabs-windows-functions.ps1"
+       {
+         "name": "SetupSqlVm",
+         "apiVersion": "2019-03-01",
+         "type": "extensions",
+         "location": "[variables('location')]",
+         "properties": {
+           "publisher": "Microsoft.Compute",
+           "type": "CustomScriptExtension",
+           "typeHandlerVersion": "1.9",
+           "autoUpgradeMinorVersion": true,
+           "settings": {
+             "fileUris": [
+               "[variables('sqlCustomScriptUri')]",
+               "https://experienceazure.blob.core.windows.net/templates/cloudlabs-common/cloudlabs-windows-functions.ps1"
 
-              ],
-              "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File ', 'migrating-sql-database-to-azure(2)/jumpvm.ps1', variables('cloudlabsCommon'), variables('Enable-CloudLabsEmbeddedShadow'))]"
+             ],
+             "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File migrating-sql-database-to-azure(2)/', variables('sqlCustomScriptFileName'), ' ',variables('cloudlabsCommon'))]"
+           }
+         },
+         "dependsOn": [
+           "[concat('Microsoft.Compute/virtualMachines/', variables('sqlVirtualMachineName'))]"
+         ],
+         "tags": {
+           "displayName": "SetupSqlVm"
+         }
+       }
+     ]
+       },
+       {
+           "name": "[variables('sqlVirtualMachineName')]",
+           "type": "Microsoft.SqlVirtualMachine/SqlVirtualMachines",
+           "apiVersion": "2017-03-01-preview",
+           "location": "[variables('location')]",
+           "dependsOn": [
+               "[resourceId('Microsoft.Compute/virtualMachines', variables('sqlVirtualMachineName'))]"
+           ],
+           "properties": {
+               "virtualMachineResourceId": "[resourceId('Microsoft.Compute/virtualMachines', variables('sqlVirtualMachineName'))]",
+               "sqlManagement": "Full",
+               "SqlServerLicenseType": "PAYG",
+               "AutoPatchingSettings": {
+                   "Enable": true,
+                   "DayOfWeek": "Sunday",
+                   "MaintenanceWindowStartingHour": 2,
+                   "MaintenanceWindowDuration": 60
+               },
+               "KeyVaultCredentialSettings": {
+                   "Enable": false,
+                   "CredentialName": ""
+               },
+               "StorageConfigurationSettings": {
+                   "DiskConfigurationType": "NEW",
+                   "StorageWorkloadType": "General",
+                   "SQLDataSettings": {
+                       "LUNs": [0],
+                       "DefaultFilePath": "F:\\data"
+                   },
+                   "SQLLogSettings": {
+                       "LUNs": [0],
+                       "DefaultFilePath": "F:\\log"
+                   },
+                   "SQLTempDbSettings": {
+                       "LUNs": [0],
+                       "DefaultFilePath": "F:\\tempDb"
+                   }
+               },
+               "ServerConfigurationsManagementSettings": {
+                   "SQLConnectivityUpdateSettings": {
+                       "ConnectivityType": "Public",
+                       "Port": "1433",
+                       "SQLAuthUpdateUserName": "[parameters('adminUsername')]",
+                       "SQLAuthUpdatePassword": "[parameters('adminPassword')]"
+                   },
+                   "AdditionalFeaturesServerConfigurations": {
+                       "IsRServicesEnabled": false
+                   }
+               }
+           }
+       },
+       {
+           "name": "[variables('jbVirtualMachineName')]",
+           "type": "Microsoft.Compute/virtualMachines",
+           "apiVersion": "2019-03-01",
+           "location": "[variables('location')]",
+           "dependsOn": [
+               "[concat('Microsoft.Network/networkInterfaces/', variables('jbNetworkInterfaceName'))]"
+           ],
+           "properties": {
+               "hardwareProfile": {
+                   "vmSize": "[variables('virtualMachineSize')]"
+               },
+               "storageProfile": {
+                   "osDisk": {
+                       "createOption": "FromImage",
+                       "managedDisk": {
+                           "storageAccountType": "Premium_LRS"
+                       }
+                   },
+                   "imageReference": {
+                       "publisher": "microsoftvisualstudio",
+                       "offer": "visualstudio2019latest",
+                       "sku": "vs-2019-comm-latest-ws2019",
+                       "version": "latest"
+                   }
+               },
+               "networkProfile": {
+                   "networkInterfaces": [
+                       {
+                           "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('jbNetworkInterfaceName'))]"
+                       }
+                   ]
+               },
+               "osProfile": {
+                   "computerName": "[variables('jbVirtualMachineName')]",
+                   "adminUsername": "[parameters('adminUsername')]",
+                   "adminPassword": "[parameters('adminPassword')]",
+                   "windowsConfiguration": {
+                       "enableAutomaticUpdates": true,
+                       "provisionVmAgent": true
+                   }
+               }
+           },
+           "resources": [
+       {
+         "name": "SetupJumpBox",
+         "apiVersion": "2019-03-01",
+         "type": "extensions",
+         "location": "[variables('location')]",
+         "properties": {
+           "publisher": "Microsoft.Compute",
+           "type": "CustomScriptExtension",
+           "typeHandlerVersion": "1.9",
+           "autoUpgradeMinorVersion": true,
+           "settings": {
+             "fileUris": [
+               "[variables('jbCustomScriptUri')]",
+               "https://experienceazure.blob.core.windows.net/templates/cloudlabs-common/cloudlabs-windows-functions.ps1"
 
-            }
-          },
-          "dependsOn": [
-            "[concat('Microsoft.Compute/virtualMachines/', variables('jbVirtualMachineName'))]"
-          ],
-          "tags": {
-            "displayName": "SetupJumpBox"
-          }
-        }
-      ]
-        },
-        {
-            "type": "Microsoft.Web/serverfarms",
-            "apiVersion": "2018-02-01",
-            "name": "[variables('appServicePlanName')]",
-            "location": "[variables('location')]",
-            "sku": {
-                "name": "S1",
-                "tier": "Standard",
-                "size": "S1",
-                "family": "S",
-                "capacity": 1
-            },
-            "tags": {},
-            "properties": {
-                "workerSize": 0,
-                "workerSizeId": 0,
-                "numberOfWorkers": 1
-            }
-        },
-        {
-            "type": "Microsoft.Web/sites",
-            "apiVersion": "2018-11-01",
-            "name": "[variables('webAppName')]",
-            "location": "[variables('location')]",
-            "dependsOn": [
-                "[concat('Microsoft.Web/serverfarms/', variables('appServicePlanName'))]"
-            ],
-            "properties": {
-                "enabled": true,
-                "siteConfig": {
-                    "connectionStrings": [
-                        {
-                            "name": "WwiContext",
-                            "connectionString": "Server=tcp:your-sqlmi-host-fqdn-value,1433;Database=WideWorldImporters;User ID=sqlmiuser;Password=Password.1234567890;Trusted_Connection=False;Encrypt=True;TrustServerCertificate=True;",
-                            "type": "SQLAzure"
-                        },
-                        {
-                            "name": "WwiReadOnlyContext",
-                            "connectionString": "Server=tcp:your-sqlmi-host-fqdn-value,1433;Database=WideWorldImporters;User ID=sqlmiuser;Password=Password.1234567890;Trusted_Connection=False;Encrypt=True;TrustServerCertificate=True;",
-                            "type": "SQLAzure"
-                        }
-                    ],
-                    "metadata": [
-                        {
-                            "name": "CURRENT_STACK",
-                            "value": "dotnetcore"
-                        }
-                    ],
-                    "alwaysOn": true
-                },
-                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms/', variables('appServicePlanName'))]"
-            }
-        },
-        {
-            "name": "[variables('virtualNetworkName')]",
-            "type": "Microsoft.Network/virtualNetworks",
-            "apiVersion": "2019-04-01",
-            "location": "[variables('location')]",
-            "dependsOn": [
-               
-               
-            ],
-            "properties": {
-                "addressSpace": {
-                    "addressPrefixes": [
-                        "[variables('addressPrefix')]"
-                    ]
-                },
-                "subnets": [
-                    {
-                        "name": "[variables('subnetName')]",
-                        "properties": {
-                            "addressPrefix": "[variables('subnetPrefix')]",
-                            
-                            
-                            "delegations":[
-                                {                                    
-                                    "name": "[concat('dlg-', variables('uniqueManagedInstanceName'))]",
-                                    "properties": {
-                                        "serviceName": "Microsoft.Sql/managedInstances"
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    {
-                        "name": "[variables('managementSubnetName')]",
-                        "properties": {
-                            "addressPrefix": "[variables('managementSubnetPrefix')]"
-                        }
-                    },
-                    {
-                        "name": "[variables('gatewaySubnetName')]",
-                        "properties": {
-                            "addressPrefix": "[variables('gatewaySubnetPrefix')]"
-                        }
-                    }
-                ]
-            }
-        },
-        
-        {
-            "name": "[variables('jbNetworkInterfaceName')]",
-            "type": "Microsoft.Network/networkInterfaces",
-            "apiVersion": "2019-07-01",
-            "location": "[variables('location')]",
-            "dependsOn": [
-                "[concat('Microsoft.Network/virtualNetworks/', variables('virtualNetworkName'))]",
-                "[concat('Microsoft.Network/publicIpAddresses/', variables('jbPublicIpAddressName'))]",
-                "[concat('Microsoft.Network/networkSecurityGroups/', variables('jbNetworkSecurityGroupName'))]"
-            ],
-            "properties": {
-                "ipConfigurations": [
-                    {
-                        "name": "ipconfig1",
-                        "properties": {
-                            "subnet": {
-                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('managementSubnetName'))]"
-                            },
-                            "privateIPAllocationMethod": "Dynamic",
-                            "publicIpAddress": {
-                                "id": "[resourceId('Microsoft.Network/publicIpAddresses', variables('jbPublicIpAddressName'))]"
-                            }
-                        }
-                    }
-                ],
-                "networkSecurityGroup": {
-                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('jbNetworkSecurityGroupName'))]"
-                }
-            }
-        },
-        {
-            "name": "[variables('sqlNetworkInterfaceName')]",
-            "type": "Microsoft.Network/networkInterfaces",
-            "apiVersion": "2019-07-01",
-            "location": "[variables('location')]",
-            "dependsOn": [
-                "[concat('Microsoft.Network/virtualNetworks/', variables('virtualNetworkName'))]",
-                "[concat('Microsoft.Network/publicIpAddresses/', variables('sqlPublicIpAddressName'))]",
-                "[concat('Microsoft.Network/networkSecurityGroups/', variables('sqlNetworkSecurityGroupName'))]"
-            ],
-            "properties": {
-                "ipConfigurations": [
-                    {
-                        "name": "ipconfig1",
-                        "properties": {
-                            "subnet": {
-                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('managementSubnetName'))]"
-                            },
-                            "privateIPAllocationMethod": "Dynamic",
-                            "publicIpAddress": {
-                                "id": "[resourceId('Microsoft.Network/publicIpAddresses', variables('sqlPublicIpAddressName'))]"
-                            }
-                        }
-                    }
-                ],
-                "networkSecurityGroup": {
-                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('sqlNetworkSecurityGroupName'))]"
-                }
-            }
-        },
-        {
-            "name": "[variables('jbPublicIpAddressName')]",
-            "type": "Microsoft.Network/publicIPAddresses",
-            "apiVersion": "2019-04-01",
-            "location": "[variables('location')]",
-            "properties": {
-                "publicIPAllocationMethod": "Dynamic"
-            },
-            "sku": {
-                "name": "Basic"
-            }
-        },
-        {
-            "name": "[variables('sqlPublicIpAddressName')]",
-            "type": "Microsoft.Network/publicIPAddresses",
-            "apiVersion": "2019-04-01",
-            "location": "[variables('location')]",
-            "properties": {
-                "publicIPAllocationMethod": "Dynamic"
-            },
-            "sku": {
-                "name": "Basic"
-            }
-        },
-        {
-            "name": "[variables('jbNetworkSecurityGroupName')]",
-            "type": "Microsoft.Network/networkSecurityGroups",
-            "apiVersion": "2019-06-01",
-            "location": "[variables('location')]",
-            "properties": {
-                "securityRules": [
-                    {
-                        "name": "RDP",
-                        "properties": {
-                            "priority": 300,
-                            "protocol": "Tcp",
-                            "access": "Allow",
-                            "direction": "Inbound",
-                            "sourceApplicationSecurityGroups": [],
-                            "destinationApplicationSecurityGroups": [],
-                            "sourceAddressPrefix": "*",
-                            "sourcePortRange": "*",
-                            "destinationAddressPrefix": "*",
-                            "destinationPortRange": "3389"
-                        }
-                    }
-                ]
-            }
-        },
-        {
-            "name": "[variables('sqlNetworkSecurityGroupName')]",
-            "type": "Microsoft.Network/networkSecurityGroups",
-            "apiVersion": "2019-06-01",
-            "location": "[variables('location')]",
-            "properties": {
-                "securityRules": [
-                    {
-                        "name": "RDP",
-                        "properties": {
-                            "priority": 300,
-                            "protocol": "Tcp",
-                            "access": "Allow",
-                            "direction": "Inbound",
-                            "sourceApplicationSecurityGroups": [],
-                            "destinationApplicationSecurityGroups": [],
-                            "sourceAddressPrefix": "*",
-                            "sourcePortRange": "*",
-                            "destinationAddressPrefix": "*",
-                            "destinationPortRange": "3389"
-                        }
-                    },
-                    {
-                        "name": "SqlServer",
-                        "properties": {
-                            "priority": 310,
-                            "protocol": "Tcp",
-                            "access": "Allow",
-                            "direction": "Inbound",
-                            "sourceApplicationSecurityGroups": [],
-                            "destinationApplicationSecurityGroups": [],
-                            "sourceAddressPrefix": "*",
-                            "sourcePortRange": "*",
-                            "destinationAddressPrefix": "*",
-                            "destinationPortRange": "1433"
-                        }
-                    }
-                ]
-            }
-        }
-    ],
-    "outputs": {
-        "adminUsername": {
-            "type": "string",
-            "value": "[parameters('adminUsername')]"
-        },
-        "managedInstanceName": {
-            "type": "string",
-            "value": "[variables('uniqueManagedInstanceName')]"
-        }
-    }
+             ],
+             "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File ', 'migrating-sql-database-to-azure(2)/jumpvm.ps1', variables('cloudlabsCommon'), variables('Enable-CloudLabsEmbeddedShadow'))]"
+
+           }
+         },
+         "dependsOn": [
+           "[concat('Microsoft.Compute/virtualMachines/', variables('jbVirtualMachineName'))]"
+         ],
+         "tags": {
+           "displayName": "SetupJumpBox"
+         }
+       }
+     ]
+       },
+       {
+           "type": "Microsoft.Web/serverfarms",
+           "apiVersion": "2018-02-01",
+           "name": "[variables('appServicePlanName')]",
+           "location": "[variables('location')]",
+           "sku": {
+               "name": "S1",
+               "tier": "Standard",
+               "size": "S1",
+               "family": "S",
+               "capacity": 1
+           },
+           "tags": {},
+           "properties": {
+               "workerSize": 0,
+               "workerSizeId": 0,
+               "numberOfWorkers": 1
+           }
+       },
+       {
+           "type": "Microsoft.Web/sites",
+           "apiVersion": "2018-11-01",
+           "name": "[variables('webAppName')]",
+           "location": "[variables('location')]",
+           "dependsOn": [
+               "[concat('Microsoft.Web/serverfarms/', variables('appServicePlanName'))]"
+           ],
+           "properties": {
+               "enabled": true,
+               "siteConfig": {
+                   "connectionStrings": [
+                       {
+                           "name": "WwiContext",
+                           "connectionString": "Server=tcp:your-sqlmi-host-fqdn-value,1433;Database=WideWorldImporters;User ID=sqlmiuser;Password=Password.1234567890;Trusted_Connection=False;Encrypt=True;TrustServerCertificate=True;",
+                           "type": "SQLAzure"
+                       },
+                       {
+                           "name": "WwiReadOnlyContext",
+                           "connectionString": "Server=tcp:your-sqlmi-host-fqdn-value,1433;Database=WideWorldImporters;User ID=sqlmiuser;Password=Password.1234567890;Trusted_Connection=False;Encrypt=True;TrustServerCertificate=True;",
+                           "type": "SQLAzure"
+                       }
+                   ],
+                   "metadata": [
+                       {
+                           "name": "CURRENT_STACK",
+                           "value": "dotnetcore"
+                       }
+                   ],
+                   "alwaysOn": true
+               },
+               "serverFarmId": "[resourceId('Microsoft.Web/serverfarms/', variables('appServicePlanName'))]"
+           }
+       },
+       {
+           "name": "[variables('virtualNetworkName')]",
+           "type": "Microsoft.Network/virtualNetworks",
+           "apiVersion": "2019-04-01",
+           "location": "[variables('location')]",
+           "dependsOn": [
+              
+              
+           ],
+           "properties": {
+               "addressSpace": {
+                   "addressPrefixes": [
+                       "[variables('addressPrefix')]"
+                   ]
+               },
+               "subnets": [
+                   {
+                       "name": "[variables('subnetName')]",
+                       "properties": {
+                           "addressPrefix": "[variables('subnetPrefix')]",
+                           
+                           
+                           "delegations":[
+                               {                                    
+                                   "name": "[concat('dlg-', variables('uniqueManagedInstanceName'))]",
+                                   "properties": {
+                                       "serviceName": "Microsoft.Sql/managedInstances"
+                                   }
+                               }
+                           ]
+                       }
+                   },
+                   {
+                       "name": "[variables('managementSubnetName')]",
+                       "properties": {
+                           "addressPrefix": "[variables('managementSubnetPrefix')]"
+                       }
+                   },
+                   {
+                       "name": "[variables('gatewaySubnetName')]",
+                       "properties": {
+                           "addressPrefix": "[variables('gatewaySubnetPrefix')]"
+                       }
+                   }
+               ]
+           }
+       },
+       
+       {
+           "name": "[variables('jbNetworkInterfaceName')]",
+           "type": "Microsoft.Network/networkInterfaces",
+           "apiVersion": "2019-07-01",
+           "location": "[variables('location')]",
+           "dependsOn": [
+               "[concat('Microsoft.Network/virtualNetworks/', variables('virtualNetworkName'))]",
+               "[concat('Microsoft.Network/publicIpAddresses/', variables('jbPublicIpAddressName'))]",
+               "[concat('Microsoft.Network/networkSecurityGroups/', variables('jbNetworkSecurityGroupName'))]"
+           ],
+           "properties": {
+               "ipConfigurations": [
+                   {
+                       "name": "ipconfig1",
+                       "properties": {
+                           "subnet": {
+                               "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('managementSubnetName'))]"
+                           },
+                           "privateIPAllocationMethod": "Dynamic",
+                           "publicIpAddress": {
+                               "id": "[resourceId('Microsoft.Network/publicIpAddresses', variables('jbPublicIpAddressName'))]"
+                           }
+                       }
+                   }
+               ],
+               "networkSecurityGroup": {
+                   "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('jbNetworkSecurityGroupName'))]"
+               }
+           }
+       },
+       {
+           "name": "[variables('sqlNetworkInterfaceName')]",
+           "type": "Microsoft.Network/networkInterfaces",
+           "apiVersion": "2019-07-01",
+           "location": "[variables('location')]",
+           "dependsOn": [
+               "[concat('Microsoft.Network/virtualNetworks/', variables('virtualNetworkName'))]",
+               "[concat('Microsoft.Network/publicIpAddresses/', variables('sqlPublicIpAddressName'))]",
+               "[concat('Microsoft.Network/networkSecurityGroups/', variables('sqlNetworkSecurityGroupName'))]"
+           ],
+           "properties": {
+               "ipConfigurations": [
+                   {
+                       "name": "ipconfig1",
+                       "properties": {
+                           "subnet": {
+                               "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('managementSubnetName'))]"
+                           },
+                           "privateIPAllocationMethod": "Dynamic",
+                           "publicIpAddress": {
+                               "id": "[resourceId('Microsoft.Network/publicIpAddresses', variables('sqlPublicIpAddressName'))]"
+                           }
+                       }
+                   }
+               ],
+               "networkSecurityGroup": {
+                   "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('sqlNetworkSecurityGroupName'))]"
+               }
+           }
+       },
+       {
+           "name": "[variables('jbPublicIpAddressName')]",
+           "type": "Microsoft.Network/publicIPAddresses",
+           "apiVersion": "2019-04-01",
+           "location": "[variables('location')]",
+           "properties": {
+               "publicIPAllocationMethod": "Dynamic"
+           },
+           "sku": {
+               "name": "Basic"
+           }
+       },
+       {
+           "name": "[variables('sqlPublicIpAddressName')]",
+           "type": "Microsoft.Network/publicIPAddresses",
+           "apiVersion": "2019-04-01",
+           "location": "[variables('location')]",
+           "properties": {
+               "publicIPAllocationMethod": "Dynamic"
+           },
+           "sku": {
+               "name": "Basic"
+           }
+       },
+       {
+           "name": "[variables('jbNetworkSecurityGroupName')]",
+           "type": "Microsoft.Network/networkSecurityGroups",
+           "apiVersion": "2019-06-01",
+           "location": "[variables('location')]",
+           "properties": {
+               "securityRules": [
+                   {
+                       "name": "RDP",
+                       "properties": {
+                           "priority": 300,
+                           "protocol": "Tcp",
+                           "access": "Allow",
+                           "direction": "Inbound",
+                           "sourceApplicationSecurityGroups": [],
+                           "destinationApplicationSecurityGroups": [],
+                           "sourceAddressPrefix": "*",
+                           "sourcePortRange": "*",
+                           "destinationAddressPrefix": "*",
+                           "destinationPortRange": "3389"
+                       }
+                   }
+               ]
+           }
+       },
+       {
+           "name": "[variables('sqlNetworkSecurityGroupName')]",
+           "type": "Microsoft.Network/networkSecurityGroups",
+           "apiVersion": "2019-06-01",
+           "location": "[variables('location')]",
+           "properties": {
+               "securityRules": [
+                   {
+                       "name": "RDP",
+                       "properties": {
+                           "priority": 300,
+                           "protocol": "Tcp",
+                           "access": "Allow",
+                           "direction": "Inbound",
+                           "sourceApplicationSecurityGroups": [],
+                           "destinationApplicationSecurityGroups": [],
+                           "sourceAddressPrefix": "*",
+                           "sourcePortRange": "*",
+                           "destinationAddressPrefix": "*",
+                           "destinationPortRange": "3389"
+                       }
+                   },
+                   {
+                       "name": "SqlServer",
+                       "properties": {
+                           "priority": 310,
+                           "protocol": "Tcp",
+                           "access": "Allow",
+                           "direction": "Inbound",
+                           "sourceApplicationSecurityGroups": [],
+                           "destinationApplicationSecurityGroups": [],
+                           "sourceAddressPrefix": "*",
+                           "sourcePortRange": "*",
+                           "destinationAddressPrefix": "*",
+                           "destinationPortRange": "1433"
+                       }
+                   }
+               ]
+           }
+       }
+   ],
+   "outputs": {
+       "adminUsername": {
+           "type": "string",
+           "value": "[parameters('adminUsername')]"
+       },
+       "managedInstanceName": {
+           "type": "string",
+           "value": "[variables('uniqueManagedInstanceName')]"
+       }
+   }
 }
