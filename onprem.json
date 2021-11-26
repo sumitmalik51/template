@@ -2,66 +2,72 @@
     "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.1",
     "parameters": {
-        "managedInstanceName": {
-            "defaultValue": "sqlmi",
-            "type": "string",
-            "maxLength": 13,
-            "metadata": {
-                "description": "Enter name to assign to the Azure SQL Managed Instance. The name can contain only lowercase letters, numbers, and '-', but can't start or end with '-' or have more than 63 characters."
-            }
-        },
         "adminUsername": {
-            "defaultValue": "sqlmiuser",
-            "type": "string",
-            "metadata": {
-                "description": "Administrator user name for logging into the virtual machine and SQL MI."
-            }
-        },
-        "adminPassword": {
-            "defaultValue": "Password.1234567890",
-            "type": "securestring",
-            "minLength": 16,
-            "maxLength": 128,
-            "metadata": {
-                "description": "The password must be between 16 and 128 characters in length and must contain at least one number, one non-alphanumeric character, and one upper or lower case letter. Default value is Password.1234567890"
-            }
-        },
-        "vCores": {
-            "type": "int",
-            "defaultValue": 4,
-            "allowedValues": [
-                4,
-                8,
-                16,
-                24,
-                32,
-                40,
-                64,
-                80
-            ],
-            "metadata": {
-                "description": "Select the number of vCores for SQL MI."
-            }
-        },
-        "storageSizeInGB": {
-            "type": "int",
-            "defaultValue": 32,
-            "allowedValues": [
-                32,
-                64,
-                96,
-                128,
-                160,
-                192,
-                224,
-                256
-            ],
-            "metadata": {
-                "description": "Select the storage size."
-            }
-        }
+      "defaultValue": "sqlmiuser",
+      "type": "string",
+      "metadata": {
+        "description": "Administrator user name for logging into the virtual machine and SQL MI."
+      }
+    },
+    "adminPassword": {
+      "defaultValue": "Password.1234567890",
+      "type": "securestring",
+      "minLength": 16,
+      "maxLength": 128,
+      "metadata": {
+        "description": "The password must be between 16 and 128 characters in length and must contain at least one number, one non-alphanumeric character, and one upper or lower case letter. Default value is Password.1234567890"
+      }
+    },
+    "vCores": {
+      "type": "int",
+      "defaultValue": 16,
+      "allowedValues": [
+        8,
+        16,
+        24,
+        32
+      ],
+      "metadata": {
+        "description": "Select the number of vCores for SQL MI."
+      }
+    },
+    "AzureUserName": {
+      "type": "string",
+      "metadata": {
+        "description": "AzureUserName, AzurePassword, DeploymentID parameters are required for Azure Creds file, Must use in all Windows LabVMs "
+      }
+    },
+    "AzurePassword": {
+      "type": "securestring"
+    },
+    "ODLID": {
+      "type": "string"
+    },
+    "DeploymentID": {
+      "type": "string"
+    },
+    "InstallCloudLabsShadow": {
+      "type": "string",
+      "defaultValue": "yes",
+      "allowedValues": [
+        "yes",
+        "no"
+      ],
+      "metadata": {
+        "description": "Required for CloudlabsShadow, value should be yes if you want to install otherwise no"
+      }
+    },
+    "trainerUserName": {
+      "type": "string"
+    },
+    "trainerUserPassword": {
+      "type": "string"
+    }
     },
     "variables": {
+         "Enable-CloudLabsEmbeddedShadow": "[concat(' -vmAdminUsername ', parameters('adminUsername'), ' -trainerUserName ', parameters('trainerUserName'), ' -trainerUserPassword ', parameters('trainerUserPassword'))]",
+
+    "cloudlabsCommon": "[concat(' -AzureUserName ', parameters('AzureUserName'), ' -AzurePassword ', parameters('AzurePassword'), ' -AzureTenantID ', variables('AzureTenantID'), ' -AzureSubscriptionID ', variables('AzureSubscriptionID'), ' -ODLID ', parameters('ODLID'), ' -DeploymentID ', parameters('DeploymentID'),' -InstallCloudLabsShadow ', parameters('InstallCloudLabsShadow'))]",
         "location": "[resourceGroup().location]",
         "uniqueManagedInstanceName": "[concat(parameters('managedInstanceName'), '-', uniqueString(resourceGroup().id))]",
         "storageAccountName": "[concat('sqlmistore', uniqueString(resourceGroup().id))]",
@@ -96,7 +102,12 @@
         "managementSubnetPrefix": "10.0.1.0/24",
         "appServicePlanName": "[concat(resourceGroup().name, '-asp')]",
         "webAppName": "[concat('wwi-web-', uniqueString(resourceGroup().id))]",
-        "dmsName": "wwi-dms"
+        "dmsName": "wwi-dms",
+        "jbCustomScriptFileName": "jumpvm.ps1",
+    "jbCustomScriptUri": "[concat('https://experienceazure.blob.core.windows.net/templates/migrating-sql-database-to-azure(2)/', variables('jbCustomScriptFileName'))]",
+    "sqlCustomScriptFileName": "sqlvm.ps1",
+    "sqlCustomScriptUri": "[concat('https://experienceazure.blob.core.windows.net/templates/migrating-sql-database-to-azure(2)/', variables('sqlCustomScriptFileName'))]",
+ 
     },
     "resources": [
         
@@ -191,7 +202,35 @@
                         "provisionVmAgent": true
                     }
                 }
+            },
+             "resources": [
+        {
+          "name": "SetupSqlVm",
+          "apiVersion": "2019-03-01",
+          "type": "extensions",
+          "location": "[variables('location')]",
+          "properties": {
+            "publisher": "Microsoft.Compute",
+            "type": "CustomScriptExtension",
+            "typeHandlerVersion": "1.9",
+            "autoUpgradeMinorVersion": true,
+            "settings": {
+              "fileUris": [
+                "[variables('sqlCustomScriptUri')]",
+                "https://experienceazure.blob.core.windows.net/templates/cloudlabs-common/cloudlabs-windows-functions.ps1"
+
+              ],
+              "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File migrating-sql-database-to-azure(2)/', variables('sqlCustomScriptFileName'), ' ',variables('cloudlabsCommon'))]"
             }
+          },
+          "dependsOn": [
+            "[concat('Microsoft.Compute/virtualMachines/', variables('sqlVirtualMachineName'))]"
+          ],
+          "tags": {
+            "displayName": "SetupSqlVm"
+          }
+        }
+      ]
         },
         {
             "name": "[variables('sqlVirtualMachineName')]",
@@ -286,7 +325,36 @@
                         "provisionVmAgent": true
                     }
                 }
+            },
+            "resources": [
+        {
+          "name": "SetupJumpBox",
+          "apiVersion": "2019-03-01",
+          "type": "extensions",
+          "location": "[variables('location')]",
+          "properties": {
+            "publisher": "Microsoft.Compute",
+            "type": "CustomScriptExtension",
+            "typeHandlerVersion": "1.9",
+            "autoUpgradeMinorVersion": true,
+            "settings": {
+              "fileUris": [
+                "[variables('jbCustomScriptUri')]",
+                "https://experienceazure.blob.core.windows.net/templates/cloudlabs-common/cloudlabs-windows-functions.ps1"
+
+              ],
+              "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File ', 'migrating-sql-database-to-azure(2)/jumpvm.ps1', variables('cloudlabsCommon'), variables('Enable-CloudLabsEmbeddedShadow'))]"
+
             }
+          },
+          "dependsOn": [
+            "[concat('Microsoft.Compute/virtualMachines/', variables('jbVirtualMachineName'))]"
+          ],
+          "tags": {
+            "displayName": "SetupJumpBox"
+          }
+        }
+      ]
         },
         {
             "type": "Microsoft.Web/serverfarms",
