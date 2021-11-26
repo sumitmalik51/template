@@ -609,14 +609,69 @@
            }
        }
    ],
-   "outputs": {
-       "adminUsername": {
-           "type": "string",
-           "value": "[parameters('adminUsername')]"
-       },
-       "managedInstanceName": {
-           "type": "string",
-           "value": "[variables('uniqueManagedInstanceName')]"
-       }
-   }
+  "outputs": {
+    "Jumpbox DNS Name": {
+      "type": "string",
+      "value": "[concat('jumpboxdns',parameters('DeploymentID'), '.', resourceGroup().location, '.cloudapp.azure.com')]"
+    },
+
+    "Jumpbox VM Username": {
+      "type": "string",
+      "value": "[parameters('adminUsername')]"
+    },
+    "Jumpbox VM Password": {
+      "type": "string",
+      "value": "[parameters('adminPassword')]"
+    },
+    "SQL Server VM DNS Name": {
+      "type": "string",
+      "value": "[concat('sqlvmdns',parameters('DeploymentID'), '.', resourceGroup().location, '.cloudapp.azure.com')]"
+    },
+    "SQL Server VM Username": {
+      "type": "string",
+      "value": "[parameters('adminUsername')]"
+    },
+    "SQL Server VM Password": {
+      "type": "string",
+      "value": "[parameters('adminPassword')]"
+    },
+    "VM Admin Username": {
+      "type": "string",
+      "value": "[parameters('adminUsername')]"
+    },
+    "VM Admin Password": {
+      "type": "string",
+      "value": "[parameters('adminPassword')]"
+    },
+    "Application/Client ID ": {
+      "type": "string",
+      "value": "197032d3-64e7-46a3-aced-1923655c17ab"
+    },
+    "Application Secret Key": {
+      "type": "string",
+      "value": "DkEjj~x.dvWH~hhfp6dMj5YrZRwDL85CwY"
+    },
+  
+    "SUFFIX": {
+      "type": "string",
+      "value": "[parameters('DeploymentID')]"
+    },
+    "SQLVM Name": {
+      "type": "string",
+      "value": "[concat('sql2008-', parameters('DeploymentID'))]"
+    },
+    "Resource Group Name": {
+      "type": "string",
+      "value": "[concat('hands-on-lab-', parameters('DeploymentID'))]"
+    },
+
+    "Database Name": {
+      "type": "string",
+      "value": "[concat('WideWorldImporters', parameters('DeploymentID'))]"
+    }
+
+
+  }
 }
+  
+    
