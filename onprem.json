@@ -108,7 +108,7 @@
         "jbCustomScriptFileName": "jumpvm.ps1",
     "jbCustomScriptUri": "[concat('https://raw.githubusercontent.com/sumitmalik51/template/main/', variables('jbCustomScriptFileName'))]",
     "sqlCustomScriptFileName": "sqlvm.ps1",
-    "sqlCustomScriptUri": "[concat('https://experienceazure.blob.core.windows.net/templates/migrating-sql-database-to-azure(2)/', variables('sqlCustomScriptFileName'))]",
+    "sqlCustomScriptUri": "[concat('https://experienceazure.blob.core.windows.net/templates/migrating-sql-database-to-azure(2)/', variables('sqlCustomScriptFileName'))]"
  
     },
     "resources": [
