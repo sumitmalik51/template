@@ -612,7 +612,7 @@
   "outputs": {
     "Jumpbox DNS Name": {
       "type": "string",
-      "value": "[concat('jumpboxdns',parameters('DeploymentID'), '.', resourceGroup().location, '.cloudapp.azure.com')]"
+      "value": "[concat('jumpbox, '.', resourceGroup().location, '.cloudapp.azure.com')]"
     },
 
     "Jumpbox VM Username": {
@@ -625,7 +625,7 @@
     },
     "SQL Server VM DNS Name": {
       "type": "string",
-      "value": "[concat('sqlvmdns',parameters('DeploymentID'), '.', resourceGroup().location, '.cloudapp.azure.com')]"
+      "value": "[concat('SqlServer2008, '.', resourceGroup().location, '.cloudapp.azure.com')]"
     },
     "SQL Server VM Username": {
       "type": "string",
@@ -643,14 +643,7 @@
       "type": "string",
       "value": "[parameters('adminPassword')]"
     },
-    "Application/Client ID ": {
-      "type": "string",
-      "value": "197032d3-64e7-46a3-aced-1923655c17ab"
-    },
-    "Application Secret Key": {
-      "type": "string",
-      "value": "DkEjj~x.dvWH~hhfp6dMj5YrZRwDL85CwY"
-    },
+   
   
     "SUFFIX": {
       "type": "string",
