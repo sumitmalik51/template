@@ -2,6 +2,14 @@
     "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.1",
     "parameters": {
+         "managedInstanceName": {
+            "defaultValue": "sqlmi",
+            "type": "string",
+            "maxLength": 13,
+            "metadata": {
+                "description": "Enter name to assign to the Azure SQL Managed Instance. The name can contain only lowercase letters, numbers, and '-', but can't start or end with '-' or have more than 63 characters."
+            }
+        },
         "adminUsername": {
       "defaultValue": "sqlmiuser",
       "type": "string",
