@@ -77,6 +77,8 @@
         "hardwareFamily": "Gen5",
         "publicDataEndpointEnabled": false,
         "timezoneId": "UTC",
+         "AzureSubscriptionID": "[subscription().subscriptionId]",
+    "AzureTenantID": "[subscription().tenantId]",
          "virtualMachineSize": "Standard_D4s_v3",
         "jbVirtualMachineName": "JumpBox",
         "jbNetworkSecurityGroupName": "[concat(variables('jbVirtualMachineName'), '-nsg')]",
