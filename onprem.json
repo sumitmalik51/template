@@ -107,8 +107,8 @@
        "appServicePlanName": "[concat(resourceGroup().name, '-asp')]",
        "webAppName": "[concat('wwi-web-', uniqueString(resourceGroup().id))]",
        "dmsName": "wwi-dms",
-       "jbCustomScriptFileName": "jumpvm.ps1",
-   "jbCustomScriptUri": "[concat('https://raw.githubusercontent.com/sumitmalik51/template/main/', variables('jbCustomScriptFileName'))]",
+       "jbCustomScriptFileName": "jumpbox.ps1",
+   "jbCustomScriptUri": "[concat('https://experienceazure.blob.core.windows.net/templates/migrating-sql-database-to-azure(2)/', variables('jbCustomScriptFileName'))]",
    "sqlCustomScriptFileName": "sqlvm.ps1",
    "sqlCustomScriptUri": "[concat('https://experienceazure.blob.core.windows.net/templates/migrating-sql-database-to-azure(2)/', variables('sqlCustomScriptFileName'))]"
 
@@ -347,7 +347,7 @@
                "https://experienceazure.blob.core.windows.net/templates/cloudlabs-common/cloudlabs-windows-functions.ps1"
 
              ],
-             "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File ', 'template/main/jumpvm.ps1', variables('cloudlabsCommon'), variables('Enable-CloudLabsEmbeddedShadow'))]"
+             "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File ', ''migrating-sql-database-to-azure(2)/jumpbox.ps1'', variables('cloudlabsCommon'), variables('Enable-CloudLabsEmbeddedShadow'))]"
 
            }
          },
