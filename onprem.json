@@ -521,36 +521,50 @@
                }
            }
        },
-       {
-           "name": "[variables('jbPublicIpAddressName')]",
-           "type": "Microsoft.Network/publicIPAddresses",
-           "apiVersion": "2019-04-01",
-           "location": "[variables('location')]",
-           "properties": {
-               "publicIPAllocationMethod": "Dynamic"
-           },
-           "sku": {
-               "name": "Basic"
-           },
-           "dnsSettings": {
-          "domainNameLabel": "[concat(variables('jbdns'))]"
-        }
-       },
-       {
-           "name": "[variables('sqlPublicIpAddressName')]",
-           "type": "Microsoft.Network/publicIPAddresses",
-           "apiVersion": "2019-04-01",
-           "location": "[variables('location')]",
-           "properties": {
-               "publicIPAllocationMethod": "Dynamic"
-           },
-           "dnsSettings": {
-          "domainNameLabel": "[concat(variables('sqldns'))]"
+      {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2020-11-01",
+            "name": "[variables('jbPublicIpAddressName')]",
+            "location": "[variables('location')]",
+            "sku": {
+                "name": "Basic",
+                "tier": "Regional"
+            },
+            "properties": {
+               
+                "publicIPAddressVersion": "IPv4",
+                "publicIPAllocationMethod": "Dynamic",
+                "idleTimeoutInMinutes": 4,
+                "dnsSettings": {
+                    "domainNameLabel": "[concat(variables('jbdns'))]"
+                    
+                },
+                
+            }
         },
-           "sku": {
-               "name": "Basic"
-           }
-       },
+       {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2020-11-01",
+            "name": "[variables('sqlPublicIpAddressName')]",
+            "location": "[variables('location')]",
+            "sku": {
+                "name": "Basic",
+                "tier": "Regional"
+            },
+            "properties": {
+               
+                "publicIPAddressVersion": "IPv4",
+                "publicIPAllocationMethod": "Dynamic",
+                "idleTimeoutInMinutes": 4,
+                "dnsSettings": {
+                    "domainNameLabel": "[concat(variables('sqldns'))]"
+                    
+                },
+                
+            }
+        },
+     
+      
        {
            "name": "[variables('jbNetworkSecurityGroupName')]",
            "type": "Microsoft.Network/networkSecurityGroups",
