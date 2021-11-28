@@ -546,7 +546,7 @@
            },
            "dnsSettings": {
           "domainNameLabel": "[concat(variables('sqldns'))]"
-        }
+        },
            "sku": {
                "name": "Basic"
            }
