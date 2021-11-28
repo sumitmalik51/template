@@ -75,6 +75,8 @@
        "storageAccountName": "[concat('sqlmistore', uniqueString(resourceGroup().id))]",
        "skuName": "BC_Gen5",
        "skuEdition": "BusinessCritical",
+      "jbdns": "[concat('jumpboxvm', parameters('deploymentID'))]",
+      "sqldns": "[concat('sqlvm', parameters('deploymentID'))]",
        "licenseType": "LicenseIncluded",
        "hardwareFamily": "Gen5",
        "publicDataEndpointEnabled": false,
@@ -529,7 +531,10 @@
            },
            "sku": {
                "name": "Basic"
-           }
+           },
+           "dnsSettings": {
+          "domainNameLabel": "[concat(variables('jbdns'))]"
+        }
        },
        {
            "name": "[variables('sqlPublicIpAddressName')]",
@@ -539,6 +544,9 @@
            "properties": {
                "publicIPAllocationMethod": "Dynamic"
            },
+           "dnsSettings": {
+          "domainNameLabel": "[concat(variables('sqldns'))]"
+        }
            "sku": {
                "name": "Basic"
            }
