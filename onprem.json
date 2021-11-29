@@ -116,6 +116,23 @@
 
    },
    "resources": [
+       {
+            "type": "Microsoft.DataMigration/services",
+            "apiVersion": "2018-04-19",
+            "name": "[variables('dmsName')]",
+            "location": "[variables('location')]",
+            "dependsOn": [
+                "[variables('virtualNetworkName')]"
+            ],
+            "sku": {
+                "name": "Premium_4vCores",
+                "tier": "Premium",
+                "size": "4 vCores"
+            },
+            "properties": {
+                "virtualSubnetId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('managementSubnetName'))]"
+            }
+        },
        
        {
            "type": "Microsoft.Storage/storageAccounts",
