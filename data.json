@@ -128,35 +128,13 @@
         "settings": {
           "fileUris": [
             "https://experienceazure.blob.core.windows.net/templates/cloudlabs-common/cloudlabs-windows-functions.ps1",
-            "https://experienceazure.blob.core.windows.net/templates/avd/scripts/jumpvmscript.ps1"
+            "https://raw.githubusercontent.com/sumitmalik51/template/main/psss.ps1"
           ],
-          "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File avd/scripts/jumpvmscript.ps1', variables('jvmcloudlabsCommon'), variables('Enable-CloudLabsEmbeddedShadow'))]"
+          "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File psss.ps1', variables('jvmcloudlabsCommon'), variables('Enable-CloudLabsEmbeddedShadow'))]"
         }
       }
     },
-    {
-      "apiVersion": "2018-10-01",
-      "type": "Microsoft.Compute/virtualMachines/extensions",
-      "name": "[concat(variables('jvmname'), '/', 'dscextension')]",
-      "location": "[resourceGroup().location]",
-      "dependsOn": [
-        "[concat('Microsoft.Compute/virtualMachines/', variables('jvmname'))]"
-      ],
-      "properties": {
-        "publisher": "Microsoft.Powershell",
-        "type": "DSC",
-        "typeHandlerVersion": "2.73",
-        "autoUpgradeMinorVersion": true,
-        "settings": {
-          "modulesUrl": "https://wvdportalstorageblob.blob.core.windows.net/galleryartifacts/Configuration.zip",
-          "configurationFunction": "Configuration.ps1\\AddSessionHost",
-          "properties": {
-            "hostPoolName": "[parameters('hostPoolName')]",
-            "registrationInfoToken": "[parameters('hostpoolToken')]"
-          }
-        }
-      }
-    },
+   
     {
       "name": "[variables('jvmvnetName')]",
       "type": "Microsoft.Network/virtualNetworks",
