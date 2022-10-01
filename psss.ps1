@@ -61,6 +61,10 @@ Connect-AzAccount -Credential $cred | Out-Null
 Set-AzContext -SubscriptionId $AzureSubscriptionID
 
 
-New-AzDeployment -Name "data-dog" -Location "eastus" -TemplateUri "https://raw.githubusercontent.com/sumitmalik51/WhatTheHack/patch-1/059-DatadogOnAzure/Student/Resources/Challenge-00/main.json" -Verbose
+New-AzDeployment -Name "data-dog" -Location "eastus" -TemplateUri "https://raw.githubusercontent.com/sumitmalik51/WhatTheHack/patch-1/059-DatadogOnAzure/Student/Resources/Challenge-00/main.json" -TemplateParameterUri "https://raw.githubusercontent.com/sumitmalik51/template/main/tempalte.parameters.json	" -Verbose
+
+
+
+
 
 
