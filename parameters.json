@@ -11,7 +11,7 @@
             "value": "demouser"
         },
         "Location": {
-            "value": "[deployment().location]",
+            "value": "eastus",
            
         },
         "TimeStamp": {
